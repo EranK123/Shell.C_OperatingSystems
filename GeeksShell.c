@@ -134,8 +134,6 @@ void execArgsPiped(char** parsed, char** parsedpipe)
 void openHelp()
 {
 	puts("\n***WELCOME TO MY SHELL HELP***"
-		"\nCopyright @ Suprotik Dey"
-		"\n-Use the shell at your own risk..."
 		"\nList of Commands supported:"
 		"\n>cd"
 		"\n>ls"
@@ -150,14 +148,14 @@ void openHelp()
 // Function to execute builtin commands
 int ownCmdHandler(char** parsed)
 {
-	int NoOfOwnCmds = 4, i, switchOwnArg = 0;
+	int NoOfOwnCmds = 3, i, switchOwnArg = 0;
 	char* ListOfOwnCmds[NoOfOwnCmds];
 	char* username;
 
 	ListOfOwnCmds[0] = "exit";
 	ListOfOwnCmds[1] = "cd";
 	ListOfOwnCmds[2] = "help";
-	ListOfOwnCmds[3] = "hello";
+	// ListOfOwnCmds[3] = "hello";
 
 	for (i = 0; i < NoOfOwnCmds; i++) {
 		if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
@@ -176,13 +174,13 @@ int ownCmdHandler(char** parsed)
 	case 3:
 		openHelp();
 		return 1;
-	case 4:
-		username = getenv("USER");
-		printf("\nHello %s.\nMind that this is "
-			"not a place to play around."
-			"\nUse help to know more..\n",
-			username);
-		return 1;
+	// case 4:
+	// 	username = getenv("USER");
+	// 	printf("\nHello %s.\nMind that this is "
+	// 		"not a place to play around."
+	// 		"\nUse help to know more..\n",
+	// 		username);
+	// 	return 1;
 	default:
 		break;
 	}
