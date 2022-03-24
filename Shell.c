@@ -15,7 +15,6 @@
 int takeInput(char* str)
 {
     char* buf;
-  
     buf = readline("\n>>> ");
     if (strlen(buf) != 0) {
         // add_history(buf);
@@ -66,8 +65,7 @@ void open_tcp_client(){
 }
 
 void get_files(){
-	struct dirent *de;  
-	printf("%d", 32);
+	struct dirent *de; 
     DIR *dr = opendir(".");
   
     if (dr == NULL)  
@@ -77,32 +75,50 @@ void get_files(){
   
     while ((de = readdir(dr)) != NULL){
             printf("%s\n", de->d_name);
-			printf("%d", 32);
 	}
     closedir(dr);
 }
 
+char* substring(char *destination, char *source, int beg, int n){
+	// printf("%s", source);
+    while (n > 0)
+    {
+        *destination = *(source + beg);
+ 
+        destination++;
+        source++;
+        n--;
+		// printf("%d\n", 75);
+		
+
+    }
+	// printf("%d", 43);
+    *destination = '\0';
+	// printf("%s", source);
+	// printf("%s", destination);
+
+    return destination;
+}
+
 int main(){
-char input[LEN];
+	char input[LEN];
 	char path[LEN];
     getcwd(path, LEN);
     printf("Current working directory: %s\n", path);
-
+	char echo_string[4]; 
 while(1){
-	
 	if(takeInput(input)){
 		continue;
 	}
-
+	printf("%s", substring(echo_string, input, 0, 4));
 	if(strcmp(input, "EXIT") == 0){
-		exit(1);
-	}else if(strcmp(input - strlen(input) + 4, "ECHO")){
+		exit(1); 
+	}else if(input[0] == 'E' && input[1] == 'C' && input[2] == 'H'){
 		printf("%s", input + 5);
 	}else if(strcmp(input, "TCP PORT") == 0){
-
+		printf("%d", 103);
 	}else if(strcmp(input, "DIR") == 0){
-		printf("%d", 32);
-		// get_files();
+		get_files();
 	}
 }
 }
