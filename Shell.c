@@ -88,15 +88,10 @@ char* substring(char *destination, char *source, int beg, int n){
         destination++;
         source++;
         n--;
-		// printf("%d\n", 75);
 		
 
     }
-	// printf("%d", 43);
     *destination = '\0';
-	// printf("%s", source);
-	// printf("%s", destination);
-
     return destination;
 }
 
