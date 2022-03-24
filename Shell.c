@@ -1,166 +1,108 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <unistd.h>
- 
-#include <sys/types.h>
-#include <sys/wait.h>
- 
-/* The array below will hold the arguments: args[0] is the command. */
-static char* args[512];
-pid_t pid;
-int command_pipe[2];
- 
-#define READ  0
-#define WRITE 1
- 
-/*
- * Handle commands separatly
- * input: return value from previous command (useful for pipe file descriptor)
- * first: 1 if first command in pipe-sequence (no input from previous pipe)
- * last: 1 if last command in pipe-sequence (no input from previous pipe)
- *
- * EXAMPLE: If you type "ls | grep shell | wc" in your shell:
- *    fd1 = command(0, 1, 0), with args[0] = "ls"
- *    fd2 = command(fd1, 0, 0), with args[0] = "grep" and args[1] = "shell"
- *    fd3 = command(fd2, 0, 1), with args[0] = "wc"
- *
- * So if 'command' returns a file descriptor, the next 'command' has this
- * descriptor as its 'input'.
- */
-static int command(int input, int first, int last)
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<readline/readline.h>
+#include<readline/history.h>
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<arpa/inet.h>
+#include <dirent.h>
+
+
+#define LEN 1024
+
+int takeInput(char* str)
 {
-	int pipettes[2];
- 
-	/* Invoke pipe */
-	pipe( pipettes );	
-	pid = fork();
- 
-	/*
-	 SCHEME:
-	 	STDIN --> O --> O --> O --> STDOUT
-	*/
- 
-	if (pid == 0) {
-		if (first == 1 && last == 0 && input == 0) {
-			// First command
-			dup2( pipettes[WRITE], STDOUT_FILENO );
-		} else if (first == 0 && last == 0 && input != 0) {
-			// Middle command
-			dup2(input, STDIN_FILENO);
-			dup2(pipettes[WRITE], STDOUT_FILENO);
-		} else {
-			// Last command
-			dup2( input, STDIN_FILENO );
-		}
- 
-		if (execvp( args[0], args) == -1)
-			_exit(EXIT_FAILURE); // If child fails
-	}
- 
-	if (input != 0) 
-		close(input);
- 
-	// Nothing more needs to be written
-	close(pipettes[WRITE]);
- 
-	// If it's the last command, nothing more needs to be read
-	if (last == 1)
-		close(pipettes[READ]);
- 
-	return pipettes[READ];
+    char* buf;
+  
+    buf = readline("\n>>> ");
+    if (strlen(buf) != 0) {
+        // add_history(buf);
+        strcpy(str, buf);
+        return 0;
+    } else {
+        return 1;
+    }
 }
- 
-/* Final cleanup, 'wait' for processes to terminate.
- *  n : Number of times 'command' was invoked.
- */
-static void cleanup(int n)
-{
-	int i;
-	for (i = 0; i < n; ++i) 
-		wait(NULL); 
+
+void open_tcp_client(){
+  char *ip = "127.0.0.1";
+  int port = 5566;
+
+  int sock;
+  struct sockaddr_in addr;
+  socklen_t addr_size;
+  char buffer[1024];
+  int n;
+
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0){
+    perror("[-]Socket error");
+    exit(1);
+  }
+  printf("[+]TCP server socket created.\n");
+
+  memset(&addr, '\0', sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = port;
+  addr.sin_addr.s_addr = inet_addr(ip);
+
+  connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+  printf("Connected to the server.\n");
+
+  bzero(buffer, 1024);
+  strcpy(buffer, "HELLO, THIS IS CLIENT.");
+  printf("Client: %s\n", buffer);
+  send(sock, buffer, strlen(buffer), 0);
+
+  bzero(buffer, 1024);
+  recv(sock, buffer, sizeof(buffer), 0);
+  printf("Server: %s\n", buffer);
+
+  close(sock);
+  printf("Disconnected from the server.\n");
+
 }
- 
-static int run(char* cmd, int input, int first, int last);
-static char line[1024];
-static int n = 0; /* number of calls to 'command' */
- 
-int main()
-{
-	printf("SHELL:\n");
-	while (1) {
-		/* Print the command prompt */
-		printf(">> ");
-		fflush(NULL);
- 
-		/* Read a command line */
-		if (!fgets(line, 1024, stdin)) 
-			return 0;
- 
-		int input = 0;
-		int first = 1;
- 
-		char* cmd = line;
-		char* next = strchr(cmd, '|'); /* Find first '|' */
- 
-		while (next != NULL) {
-			/* 'next' points to '|' */
-			*next = '\0';
-			input = run(cmd, input, first, 0);
- 
-			cmd = next + 1;
-			next = strchr(cmd, '|'); /* Find next '|' */
-			first = 0;
-		}
-		input = run(cmd, input, first, 1);
-		cleanup(n);
-		n = 0;
+
+void get_files(){
+	struct dirent *de;  
+	printf("%d", 32);
+    DIR *dr = opendir(".");
+  
+    if (dr == NULL)  
+    {
+        printf("Could not open current directory" );
+    }
+  
+    while ((de = readdir(dr)) != NULL){
+            printf("%s\n", de->d_name);
+			printf("%d", 32);
 	}
-	return 0;
+    closedir(dr);
 }
- 
-static void split(char* cmd);
- 
-static int run(char* cmd, int input, int first, int last)
-{
-	split(cmd);
-	if (args[0] != NULL) {
-		if (strcmp(args[0], "EXIT") == 0){ 
-			exit(0);
-        }
-		n += 1;
-		return command(input, first, last);
+
+int main(){
+char input[LEN];
+	char path[LEN];
+    getcwd(path, LEN);
+    printf("Current working directory: %s\n", path);
+
+while(1){
+	
+	if(takeInput(input)){
+		continue;
 	}
-	return 0;
+
+	if(strcmp(input, "EXIT") == 0){
+		exit(1);
+	}else if(strcmp(input - strlen(input) + 4, "ECHO")){
+		printf("%s", input + 5);
+	}else if(strcmp(input, "TCP PORT") == 0){
+
+	}else if(strcmp(input, "DIR") == 0){
+		printf("%d", 32);
+		// get_files();
+	}
 }
- 
-static char* skipwhite(char* s)
-{
-	while (isspace(*s)) ++s;
-	return s;
-}
- 
-static void split(char* cmd)
-{
-	cmd = skipwhite(cmd);
-	char* next = strchr(cmd, ' ');
-	int i = 0;
- 
-	while(next != NULL) {
-		next[0] = '\0';
-		args[i] = cmd;
-		++i;
-		cmd = skipwhite(next + 1);
-		next = strchr(cmd, ' ');
-	}
- 
-	if (cmd[0] != '\0') {
-		args[i] = cmd;
-		next = strchr(cmd, '\n');
-		next[0] = '\0';
-		++i; 
-	}
- 
-	args[i] = NULL;
 }

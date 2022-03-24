@@ -7,6 +7,8 @@
 #include<sys/wait.h>
 #include<readline/readline.h>
 #include<readline/history.h>
+#include<arpa/inet.h>
+// #include"Server.c"
 
 #define MAXCOM 1000 // max number of letters to be supported
 #define MAXLIST 100 // max number of commands to be supported
@@ -18,12 +20,12 @@
 void init_shell()
 {
 	clear();
-	printf("\n\n\n\n******************"
-		"************************");
-	printf("\n\n\n\t****MY SHELL****");
-	printf("\n\n\t-USE AT YOUR OWN RISK-");
-	printf("\n\n\n\n*******************"
-		"***********************");
+	// printf("\n\n\n\n******************"
+	// 	"************************");
+	// printf("\n\n\n\t****MY SHELL****");
+	// printf("\n\n\t-USE AT YOUR OWN RISK-");
+	// printf("\n\n\n\n*******************"
+	// 	"***********************");
 	char* username = getenv("USER");
 	printf("\n\n\nUSER is: @%s", username);
 	printf("\n");
@@ -145,17 +147,60 @@ void openHelp()
 	return;
 }
 
+void open_tcp_client(){
+  char *ip = "127.0.0.1";
+  int port = 5566;
+
+  int sock;
+  struct sockaddr_in addr;
+  socklen_t addr_size;
+  char buffer[1024];
+  int n;
+
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0){
+    perror("[-]Socket error");
+    exit(1);
+  }
+  printf("[+]TCP server socket created.\n");
+
+  memset(&addr, '\0', sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = port;
+  addr.sin_addr.s_addr = inet_addr(ip);
+
+  connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+  printf("Connected to the server.\n");
+
+  bzero(buffer, 1024);
+  strcpy(buffer, "HELLO, THIS IS CLIENT.");
+  printf("Client: %s\n", buffer);
+  send(sock, buffer, strlen(buffer), 0);
+
+  bzero(buffer, 1024);
+  recv(sock, buffer, sizeof(buffer), 0);
+  printf("Server: %s\n", buffer);
+
+  close(sock);
+  printf("Disconnected from the server.\n");
+
+}
+
 // Function to execute builtin commands
 int ownCmdHandler(char** parsed)
 {
-	int NoOfOwnCmds = 3, i, switchOwnArg = 0;
+	int NoOfOwnCmds = 6, i, switchOwnArg = 0;
 	char* ListOfOwnCmds[NoOfOwnCmds];
 	char* username;
 
 	ListOfOwnCmds[0] = "exit";
 	ListOfOwnCmds[1] = "cd";
 	ListOfOwnCmds[2] = "help";
-	// ListOfOwnCmds[3] = "hello";
+	ListOfOwnCmds[3] = "tcp";
+	ListOfOwnCmds[4] = "delete";
+	// ListOfOwnCmds[5] = "parsed";
+	// printf("%s", *parsed);
+	
 
 	for (i = 0; i < NoOfOwnCmds; i++) {
 		if (strcmp(parsed[0], ListOfOwnCmds[i]) == 0) {
@@ -174,6 +219,11 @@ int ownCmdHandler(char** parsed)
 	case 3:
 		openHelp();
 		return 1;
+	case 4:
+		open_tcp_client();
+		return 1;
+	case 5:
+		remove(ListOfOwnCmds[5]);
 	// case 4:
 	// 	username = getenv("USER");
 	// 	printf("\nHello %s.\nMind that this is "
@@ -257,6 +307,7 @@ int main()
 		if (takeInput(inputString))
 			continue;
 		// process
+		printf("%s", inputString);
 		execFlag = processString(inputString,
 		parsedArgs, parsedArgsPiped);
 		// execflag returns zero if there is no command
