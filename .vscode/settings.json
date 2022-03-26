@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "readline.h": "c"
+        "readline.h": "c",
+        "*.tcc": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp"
     }
 }

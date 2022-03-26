@@ -126,13 +126,14 @@ void copyFile(char* filename, char* directory_from,char* directory_to, char* cwd
 
 
 int main(){
-    char *curr , *src, *dest;
+    char *curr , *src, *dest, *filename;
 	string input;
 	char path[256];
     getcwd(path, 256);
     printf("Current working directory: %s\n\n", path);
     curr = getcwd(path, 256);
 while(1){
+    cout << input.substr(0,5);
     cout << ">>> ";
 	getline(cin, input);
     // cout << input << endl;
@@ -164,8 +165,14 @@ while(1){
         strcpy(cwd, curr);
         chdir(src);
         curr = getcwd(path, 256);
-        char *filename = get_file_name(curr);
+        filename = get_file_name(curr);
         copyFile(filename, src, dest, cwd);
+    }else if(input.substr(0,6).compare("DELETE") == 0){
+        filename = &input.substr(7, input.length())[0];
+        cout << filename;
+        if(remove(filename) != 0){
+            perror("Error deleting file");
     }
+}
 }
 }
