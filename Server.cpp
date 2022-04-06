@@ -6,7 +6,7 @@
 
 int main(){
 
-  char *ip = "127.0.0.1";
+  const char *ip = "127.0.0.1";
   int port = 5566;
 
   int server_sock, client_sock;
@@ -43,17 +43,23 @@ int main(){
     printf("[+]Client connected.\n");
 
     bzero(buffer, 1024);
+    while (1)
+    {
+         
     recv(client_sock, buffer, sizeof(buffer), 0);
     printf("Client: %s\n", buffer);
+    if(strncmp(buffer, "LOCAL",strlen("LOCAL")) == 0){
+      break;
+    }
 
     bzero(buffer, 1024);
-    strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY!!!");
-    printf("Server: %s\n", buffer);
-    send(client_sock, buffer, strlen(buffer), 0);
+    // strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY!!!");
+    // printf("Server: %s\n", buffer);
+    // send(client_sock, buffer, strlen(buffer), 0);
 
+    // printf("[+]Client disconnected.\n\n");
+    }
     close(client_sock);
-    printf("[+]Client disconnected.\n\n");
-
   }
 
   return 0;

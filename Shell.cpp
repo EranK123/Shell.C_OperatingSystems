@@ -6,50 +6,52 @@
 #include <vector>
 #include <dirent.h>
 #include <string.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 using namespace std;
 using std::cout; using std::cin;
 using std::string;
 using std::vector;
+int sock = 0;
+int temp = dup(1);
+void open_tcp_client(){
+  const char *ip = "127.0.0.1";
+  int port = 5566;
 
+  struct sockaddr_in addr;
+  socklen_t addr_size;
+  char buffer[1024];
+  int n;
 
-// void open_tcp_client(){
-//   char *ip = "127.0.0.1";
-//   int port = 5566;
+  sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0){
+    perror("[-]Socket error");
+    exit(1);
+  }
+  printf("[+]TCP server socket created.\n");
 
-//   int sock;
-//   struct sockaddr_in addr;
-//   socklen_t addr_size;
-//   char buffer[1024];
-//   int n;
+  memset(&addr, '\0', sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_port = port;
+  addr.sin_addr.s_addr = inet_addr(ip);
 
-//   sock = socket(AF_INET, SOCK_STREAM, 0);
-//   if (sock < 0){
-//     perror("[-]Socket error");
-//     exit(1);
-//   }
-//   printf("[+]TCP server socket created.\n");
-
-//   memset(&addr, '\0', sizeof(addr));
-//   addr.sin_family = AF_INET;
-//   addr.sin_port = port;
-//   addr.sin_addr.s_addr = inet_addr(ip);
-
-//   connect(sock, (struct sockaddr*)&addr, sizeof(addr));
-//   printf("Connected to the server.\n");
-
-//   bzero(buffer, 1024);
-//   strcpy(buffer, "HELLO, THIS IS CLIENT.");
-//   printf("Client: %s\n", buffer);
+  connect(sock, (struct sockaddr*)&addr, sizeof(addr));
+  printf("Connected to the server.\n");
+  dup2(sock , 1);
+  bzero(buffer, 1024);
+  strcpy(buffer, "HELLO, THIS IS CLIENT.");
+  printf("Client: %s\n", buffer);
 //   send(sock, buffer, strlen(buffer), 0);
 
-//   bzero(buffer, 1024);
+  bzero(buffer, 1024);
 //   recv(sock, buffer, sizeof(buffer), 0);
-//   printf("Server: %s\n", buffer);
-
+  printf("Server: %s\n", buffer);  
 //   close(sock);
 //   printf("Disconnected from the server.\n");
 
-// }
+}
+
 
 void get_files(){
 	DIR *dir;
@@ -133,20 +135,18 @@ int main(){
     printf("Current working directory: %s\n\n", path);
     curr = getcwd(path, 256);
 while(1){
-    cout << input.substr(0,5);
     cout << ">>> ";
 	getline(cin, input);
     // cout << input << endl;
 	if(input.compare("EXIT") == 0){
 		exit(1);
-        // system("exit");
 	}else if(input.substr(0,4).compare("ECHO") == 0){
 		cout << input.substr(5, input.length()) << endl;
 	}else if(input.compare("TCP PORT") == 0){
-		cout << "tcp\n";
+		open_tcp_client();
+        // dup2(sock, 1);
 	}else if(input.compare("DIR") == 0){
-		// list_dir(getcwd(path, 256));
-        system("ls");
+		list_dir(getcwd(path, 256));
 	}else if(input.substr(0,2).compare("CD") == 0){
         string new_dir = input.substr(3, input.length());
          int r = chdir(new_dir.c_str());
@@ -173,6 +173,11 @@ while(1){
         if(remove(filename) != 0){
             perror("Error deleting file");
     }
-}
+    }else if(input.substr(0,5).compare("LOCAL") == 0){
+        cout << "LOCAL" << endl;
+        dup2(temp,1);
+    }else{
+        system(input.c_str());
+    }
 }
 }
