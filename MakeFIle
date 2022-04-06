@@ -1,0 +1,16 @@
+all: Shell Server
+
+Shell: Shell.o
+	clang++ Shell.o -o Shell
+	
+Server: Server.o
+	clang++ Server.o -o Server
+
+Shell.o: Shell.cpp
+	clang++ -c Shell.cpp
+
+Server.o: Server.cpp
+	clang++ -c Server.cpp
+
+clean: 
+	rm *.o
