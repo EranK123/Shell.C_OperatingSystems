@@ -13,4 +13,4 @@ Server.o: Server.cpp
 	clang++ -c Server.cpp
 
 clean: 
-	rm *.o
+	rm *.o Shell Server
