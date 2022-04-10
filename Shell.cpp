@@ -93,7 +93,6 @@ char* get_file_name(const char *path) {
 }
 
 void copyFile(char* filename, char* directory_from,char* directory_to, char* cwd) {
-    // cout << filename << endl;
     FILE *file, *copyfile;
     char c;
     cout << "cwd: " << cwd << endl;
@@ -127,7 +126,9 @@ void copyFile(char* filename, char* directory_from,char* directory_to, char* cwd
 }
 
 
+
 int main(){
+    int parentd_pid = getpid();
     char *curr , *src, *dest, *filename;
 	string input;
 	char path[256];
@@ -147,7 +148,7 @@ while(1){
         // dup2(sock, 1);
 	}else if(input.compare("DIR") == 0){
 		list_dir(getcwd(path, 256));
-	}else if(input.substr(0,2).compare("CD") == 0){
+	}else if(input.substr(0,2).compare("CD") == 0){ //The chdir command is a system function which is used to change the current working directory.
         string new_dir = input.substr(3, input.length());
          int r = chdir(new_dir.c_str());
          if(r < 0){
@@ -157,7 +158,8 @@ while(1){
         getcwd(path, 256);
         printf("Current working directory: %s\n\n", path);
          }
-	}else if(input.substr(0,4).compare("COPY") == 0){
+	}else if(input.substr(0,4).compare("COPY") == 0){ //our implementaion is using fopen and fclose which are library 
+    //function but also uses chdir which is a system call as said earlier.
         int last_space = input.find_last_of(" ");
         src = &(input.substr(5, last_space - 5))[0];
         dest = &input.substr(last_space + 1, input.length())[0];
@@ -177,7 +179,35 @@ while(1){
         cout << "LOCAL" << endl;
         dup2(temp,1);
     }else{
-        system(input.c_str());
+      string temp = "";
+      int index = 0;
+     int count_spaces = 0;
+        for(int i = 0; i < input.length(); i++){
+            if (input.at(i) == ' '){
+                count_spaces++;
+            }
+        }
+    char *args[count_spaces + 2];
+      for(int i=0; i<(int)input.size(); i++){
+         if(input[i] != ' '){
+            temp += input[i];
+        }
+          else{
+            args[index] = strcpy(new char[temp.length() + 1], temp.c_str());
+            index++;
+            temp = "";
+        }
+    }   
+       args[index++] = strcpy(new char[temp.length() + 1], temp.c_str());
+        char *cmd = args[0];
+        args[index] = NULL;
+        fork();
+        wait(NULL);
+        if(getpid() != parentd_pid){
+            execvp(cmd,args);
+        }
+        // system(input.c_str()); //system is a library function
+
     }
 }
 }
