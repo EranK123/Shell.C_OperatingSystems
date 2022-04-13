@@ -53,11 +53,6 @@ int main(){
     }
 
     bzero(buffer, 1024);
-    // strcpy(buffer, "HI, THIS IS SERVER. HAVE A NICE DAY!!!");
-    // printf("Server: %s\n", buffer);
-    // send(client_sock, buffer, strlen(buffer), 0);
-
-    // printf("[+]Client disconnected.\n\n");
     }
     close(client_sock);
   }

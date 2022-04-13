@@ -15,6 +15,7 @@ using std::string;
 using std::vector;
 int sock = 0;
 int temp = dup(1);
+int is_open = 0;
 void open_tcp_client(){
   const char *ip = "127.0.0.1";
   int port = 5566;
@@ -42,13 +43,9 @@ void open_tcp_client(){
   bzero(buffer, 1024);
   strcpy(buffer, "HELLO, THIS IS CLIENT.");
   printf("Client: %s\n", buffer);
-//   send(sock, buffer, strlen(buffer), 0);
-
   bzero(buffer, 1024);
-//   recv(sock, buffer, sizeof(buffer), 0);
-  printf("Server: %s\n", buffer);  
-//   close(sock);
-//   printf("Disconnected from the server.\n");
+  printf("Server: %s\n", buffer);
+  is_open = 1;  
 
 }
 
@@ -144,8 +141,12 @@ while(1){
 	}else if(input.substr(0,4).compare("ECHO") == 0){
 		cout << input.substr(5, input.length()) << endl;
 	}else if(input.compare("TCP PORT") == 0){
-		open_tcp_client();
-        // dup2(sock, 1);
+        if(is_open){
+            cout << "Socket is already connected" << '\n';
+            continue;
+        }else{
+            open_tcp_client();
+        }
 	}else if(input.compare("DIR") == 0){
 		list_dir(getcwd(path, 256));
 	}else if(input.substr(0,2).compare("CD") == 0){ //The chdir command is a system function which is used to change the current working directory.
@@ -171,13 +172,13 @@ while(1){
         copyFile(filename, src, dest, cwd);
     }else if(input.substr(0,6).compare("DELETE") == 0){
         filename = &input.substr(7, input.length())[0];
-        cout << filename;
-        if(remove(filename) != 0){
+        if(remove(filename) != 0){ //remove is a library function
             perror("Error deleting file");
     }
     }else if(input.substr(0,5).compare("LOCAL") == 0){
         cout << "LOCAL" << endl;
         dup2(temp,1);
+        is_open = 0;
     }else{
       string temp = "";
       int index = 0;
@@ -207,7 +208,6 @@ while(1){
             execvp(cmd,args);
         }
         // system(input.c_str()); //system is a library function
-
     }
 }
 }
