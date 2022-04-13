@@ -1,16 +1,16 @@
-all: Shell Server
+all: main Server
 
-Shell: Shell.o
-	clang++ Shell.o -o Shell
+main: main.o
+	clang++ main.o -o main
 	
 Server: Server.o
 	clang++ Server.o -o Server
 
-Shell.o: Shell.cpp
-	clang++ -c Shell.cpp
+main.o: main.cpp
+	clang++ -c main.cpp
 
 Server.o: Server.cpp
 	clang++ -c Server.cpp
 
 clean: 
-	rm *.o Shell Server
+	rm *.o main Server
